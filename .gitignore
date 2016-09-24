@@ -6,6 +6,7 @@ __MACOSX
 ._*
 .*swp
 .*swo
+*.map
 
 # ignore composer files
 composer.phar
@@ -46,15 +47,17 @@ error_log
 /.settings/
 /.buildpath
 
-# ignore JavaScript source maps
-/concrete/js/*.js.map
-/concrete/js/bootstrap/*.js.map
 
 # ignore node modules used for building
 /build/node_modules
 /build/release
 /build/Gruntfile.parameters.js
 /build/npm-debug.log
+
+/build-old/node_modules
+/build-old/release
+/build-old/Gruntfile.parameters.js
+/build-old/npm-debug.log
 
 # ignore PHP symbol map
 __IDE_SYMBOLS__.php
