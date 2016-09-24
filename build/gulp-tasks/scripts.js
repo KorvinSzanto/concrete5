@@ -21,11 +21,7 @@ elixir(function (mix) {
             'build/core/image-editor/build/jquerybinding.js',
             'build/core/image-editor/build/filters.js'
         ],
-        '../concrete/js/build/core/image-editor/image-editor.js');
-    mix.scripts([
-        'build/core/image-editor/image-editor.js',
-        '../concrete/js/image-editor.js'
-    ]);
+        '../concrete/js/image-editor.js');
 
     // App.js
 
