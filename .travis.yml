@@ -33,16 +33,16 @@ script:
     if [[ $COVERAGE = yes ]]; then
       phpunit --verbose --coverage-clover=coverage.clover;
     elif [[ $INSTALL = yes ]]; then
-      concrete/bin/concrete5 c5:install
-            --db-username=travis
-            --db-password=""
-            --db-database=concrete5_install
-            --db-server=127.0.0.1
-            --site=travis_install
-            --starting-point=elemental_full
-            --admin-email=korvinszanto@gmail.com
-            --admin-password=password
-            --default-locale=en_US;
+      concrete/bin/concrete5 c5:install \
+            --db-username="travis" \
+            --db-password="" \
+            --db-database="concrete5_install" \
+            --db-server="127.0.0.1" \
+            --site="travis_install" \
+            --starting-point="elemental_full" \
+            --admin-email="korvinszanto@gmail.com" \
+            --admin-password="password" \
+            --default-locale="en_US";
     else
       phpunit --verbose;
     fi

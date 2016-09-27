@@ -22,7 +22,7 @@ class InstallCommand extends Command
             ->setDescription('Install concrete5')
             ->addOption('db-server', null, InputOption::VALUE_REQUIRED, 'Location of database server')
             ->addOption('db-username', null, InputOption::VALUE_REQUIRED, 'Database username')
-            ->addOption('db-password', null, InputOption::VALUE_REQUIRED, 'Database password')
+            ->addOption('db-password', null, InputOption::VALUE_OPTIONAL, 'Database password')
             ->addOption('db-database', null, InputOption::VALUE_REQUIRED, 'Database name')
             ->addOption('site', null, InputOption::VALUE_REQUIRED, 'Name of the site', 'concrete5 Site')
             ->addOption('starting-point', null, InputOption::VALUE_REQUIRED, 'Starting point to use', 'elemental_blank')
