@@ -21,7 +21,7 @@ matrix:
     - php: nightly
 
 before_script:
-  - phpenv config-rm xdebug.ini
+  - phpenv config-rm xdebug.ini || echo "Couldn't find xdebug.ini"
   - travis_retry composer install --no-interaction
   - mysql -e 'create database concrete5_install;'
   - mysql -e "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,ONLY_FULL_GROUP_BY'"
