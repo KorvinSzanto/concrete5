@@ -15,8 +15,9 @@ php:
 matrix:
   include:
     - php: 7.0
-      env: COVERAGE=yes
       env: INSTALL=yes
+    - php: 7.0
+      env: COVERAGE=yes
   allow_failures:
     - php: hhvm
     - php: 7.1
