@@ -50,9 +50,9 @@ script:
       phpunit --verbose;
     fi
   - |
-  if [[ $CODESTYLE = yes ]]; then
-    concrete/vendor/bin/phpcs -p --standard=psr2 --sniffs=Generic.PHP.DisallowShortOpenTagSniff,Generic.WhiteSpace.DisallowTabIndent concrete/src concrete/controllers;
-  fi
+    if [[ $CODESTYLE = yes ]]; then
+      concrete/vendor/bin/phpcs -p --standard=psr2 --sniffs=Generic.PHP.DisallowShortOpenTagSniff,Generic.WhiteSpace.DisallowTabIndent concrete/src concrete/controllers;
+    fi
 
 after_script:
   - |
