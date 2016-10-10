@@ -1297,6 +1297,7 @@ return array(
             'class' => \Concrete\Core\Http\Middleware\ApplicationMiddleware::class
         ],
         'core_cookie' => \Concrete\Core\Http\Middleware\CookieMiddleware::class,
-        'core_xframeoptions' => \Concrete\Core\Http\Middleware\FrameOptionsMiddleware::class
+        'core_xframeoptions' => \Concrete\Core\Http\Middleware\FrameOptionsMiddleware::class,
+        'core_http_exceptions' => \Concrete\Core\Http\Middleware\HttpExceptionMiddleware::class
     ]
 );
