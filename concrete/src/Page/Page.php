@@ -6,6 +6,7 @@ use Concrete\Core\Database\Connection\Connection;
 use Concrete\Core\Entity\Page\Template as TemplateEntity;
 use Concrete\Core\Entity\Site\Site;
 use Concrete\Core\Entity\Site\SiteTree;
+use Concrete\Core\Entity\Site\Tree;
 use Concrete\Core\Page\Stack\Stack;
 use Concrete\Core\Site\Tree\TreeInterface;
 use Concrete\Core\Multilingual\Page\Section\Section;
@@ -1164,11 +1165,17 @@ class Page extends Collection implements \Concrete\Core\Permission\ObjectInterfa
         return $this->siteTreeID;
     }
 
+    /**
+     * Get the site tree object attached to this page
+     * @return Tree|null
+     */
     public function getSiteTreeObject()
     {
-        $em = \ORM::entityManager();
+        if ($siteTreeID = $this->getSiteTreeID()) {
+            $em = \ORM::entityManager();
 
-        return $em->find('\Concrete\Core\Entity\Site\Tree', $this->getSiteTreeID());
+            return $em->find('\Concrete\Core\Entity\Site\Tree', $this->getSiteTreeID());
+        }
     }
 
     /**
