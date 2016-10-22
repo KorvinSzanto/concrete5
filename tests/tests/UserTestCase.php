@@ -1,6 +1,12 @@
 <?php
 
 use Concrete\Core\Attribute\Key\Category;
+use Concrete\Core\Entity\Attribute\Category as AttributeCategory;
+use Concrete\Core\Entity\Attribute\Key\Key;
+use Concrete\Core\Entity\Attribute\Key\UserKey;
+use Concrete\Core\Entity\Attribute\Key\UserValue;
+use Concrete\Core\Entity\User\User;
+use Concrete\Core\Entity\User\UserSignup;
 
 abstract class UserTestCase extends ConcreteDatabaseTestCase
 {
@@ -13,11 +19,12 @@ abstract class UserTestCase extends ConcreteDatabaseTestCase
     ); // so brutal
 
     protected $metadatas = array(
-        'Concrete\Core\Entity\User\User',
-        'Concrete\Core\Entity\Attribute\Category',
-        'Concrete\Core\Entity\Attribute\Key\Key',
-        'Concrete\Core\Entity\Attribute\Key\UserValue',
-        'Concrete\Core\Entity\Attribute\Key\UserKey',
+        User::class,
+        UserSignup::class,
+        AttributeCategory::class,
+        Key::class,
+        UserValue::class,
+        UserKey::class,
     );
 
     protected function setUp()

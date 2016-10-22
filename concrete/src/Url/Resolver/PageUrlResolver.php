@@ -21,6 +21,7 @@ class PageUrlResolver implements UrlResolverInterface
             return $resolved;
         }
 
+        $page = null;
         if ($arguments) {
             $page = head($arguments);
         }

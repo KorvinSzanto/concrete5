@@ -1,6 +1,12 @@
 <?php
 namespace Concrete\Tests\Core\User;
 
+use Concrete\Core\Entity\Site\Site;
+use Concrete\Core\Entity\Site\SiteTree;
+use Concrete\Core\Entity\Site\Tree;
+use Concrete\Core\Entity\Site\Type;
+use Concrete\Core\Entity\User\User;
+use Concrete\Core\Entity\User\UserSignup;
 use Concrete\Core\User\Group\Group;
 use Concrete\Core\User\Point\Action\Action;
 use Concrete\Core\User\Point\EntryList;
@@ -11,11 +17,12 @@ class UserPointTest extends \ConcreteDatabaseTestCase
     'UserGroups', 'UserPointHistory', 'PermissionKeys', 'PermissionKeyCategories');
 
     protected $metadatas = array(
-        'Concrete\Core\Entity\Site\Site',
-        'Concrete\Core\Entity\Site\Type',
-        'Concrete\Core\Entity\Site\Tree',
-        'Concrete\Core\Entity\Site\SiteTree',
-        'Concrete\Core\Entity\User\User'
+        Site::class,
+        Type::class,
+        Tree::class,
+        SiteTree::class,
+        User::class,
+        UserSignup::class
     );
 
     public function testUserPointActionWithGroup()

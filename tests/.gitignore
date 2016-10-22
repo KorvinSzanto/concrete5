@@ -2,3 +2,4 @@
 /vendor
 .DS_Store
 .project
+/config/generated_overrides
