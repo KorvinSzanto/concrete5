@@ -2,6 +2,8 @@
 namespace Concrete\Core\File;
 
 use Concrete\Core\Search\ItemList\Database\ItemList;
+use Concrete\Core\Search\Pagination\Adapter\FilteredAdapter;
+use Concrete\Core\Search\Pagination\InfinitePagination;
 use Concrete\Core\Search\Pagination\Pagination;
 use Concrete\Core\Search\Pagination\PermissionablePagination;
 use Concrete\Core\Search\PermissionableListItemInterface;
@@ -63,14 +65,10 @@ class FolderItemList extends ItemList implements PermissionableListItemInterface
 
     protected function createPaginationObject()
     {
-        if (isset($this->permissionsChecker) && $this->permissionsChecker === -1) {
-            $adapter = new DoctrineDbalAdapter($this->deliverQueryObject(), function ($query) {
-                $query->resetQueryParts(['groupBy', 'orderBy'])->select('count(distinct n.treeNodeID)')->setMaxResults(1);
-            });
-            $pagination = new Pagination($this, $adapter);
-        } else {
-            $pagination = new PermissionablePagination($this);
-        }
+        $adapter = new DoctrineDbalAdapter($this->deliverQueryObject(), function ($query) {
+            $query->resetQueryParts(['groupBy', 'orderBy'])->select('count(distinct n.treeNodeID)')->setMaxResults(1);
+        });
+        $pagination = new InfinitePagination($this, $adapter);
 
         return $pagination;
     }

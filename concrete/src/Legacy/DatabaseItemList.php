@@ -161,6 +161,11 @@ class DatabaseItemList extends ItemList
         return $resp;
     }
 
+    public function getIterator($itemsToGet = 0, $offset = 0)
+    {
+
+    }
+
     /**
      * Adds a filter to this item list.
      */
