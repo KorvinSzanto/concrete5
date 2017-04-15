@@ -1,10 +1,18 @@
 <?php
 namespace Concrete\Core\Validator;
 
-class ValidatorManager implements ValidatorManagerInterface
+use Concrete\Core\Application\ApplicationAwareInterface;
+use Concrete\Core\Application\ApplicationAwareTrait;
+
+class ValidatorManager implements ValidatorManagerInterface, ApplicationAwareInterface
 {
+
+    use ApplicationAwareTrait;
+
     /** @var ValidatorInterface[] */
     protected $validators = array();
+
+    protected $inflator;
 
     /**
      * Get the validator requirements in the form of an array keyed by it's respective error code.
@@ -28,11 +36,14 @@ class ValidatorManager implements ValidatorManagerInterface
     /**
      * Get a list of all validators.
      *
-     * @return ValidatorInterface[] Array of validators keyed by their handles
+     * @return ValidatorInterface[]|array|\Iterator Iterator of validators keyed by their handles
      */
     public function getValidators()
     {
-        return $this->validators;
+        $inflate = $this->getInflator();
+        foreach ($this->validators as $key => $validator) {
+            yield $key => $inflate($validator);
+        }
     }
 
     /**
@@ -45,6 +56,43 @@ class ValidatorManager implements ValidatorManagerInterface
     public function hasValidator($handle)
     {
         return isset($this->validators[$handle]);
+    }
+
+    /**
+     * Get the inflator to use
+     * @return callable
+     */
+    protected function getInflator()
+    {
+        return $this->inflator ?: [$this, 'inflate'];
+    }
+
+    protected function setInflator(callable $inflator)
+    {
+        $this->inflator = $inflator;
+        return $this;
+    }
+
+    /**
+     * Return a full validator object
+     *
+     * @param $validator
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    protected function inflate($validator)
+    {
+        if (is_string($validator)) {
+            $validator = $this->app->make($validator);
+        } elseif (is_callable($validator)) {
+            $validator = $this->app->call($validator);
+        }
+
+        if (!$validator instanceof ValidatorInterface) {
+            throw new \InvalidArgumentException('Invalid Validator Binding.');
+        }
+
+        return $validator;
     }
 
     /**

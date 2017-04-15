@@ -101,6 +101,9 @@ class Site implements TreeInterface, ObjectInterface, PermissionObjectInterface
         $this->siteConfig = new Liaison($appConfigRepository, $this);
     }
 
+    /**
+     * @return \Concrete\Core\Config\Repository\Repository
+     */
     public function getConfigRepository()
     {
         return $this->siteConfig;
