@@ -47,7 +47,7 @@ foreach ($result as $validatorName => $resultSet) {
                             if ($link = $validator->linkForError($error->getCode())) {
                                 ?>
                                 <a href="<?= $link ?>">
-                                    <i class="fa fa-link pull-right"></i>
+                                    <i class="fa fa-external-link pull-right"></i>
                                 </a>
                                 <?php
                             }
