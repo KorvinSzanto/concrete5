@@ -43,7 +43,7 @@ foreach ($result as $validatorName => $resultSet) {
                     <li class="list-group-item alert alert-<?= $color ?>">
                         <?php
                         echo $error->getMessage();
-                        if ($validator instanceof \Concrete\Core\Validator\Site\DocumentedValidator) {
+                        if ($validator instanceof \Concrete\Core\Validator\Site\DocumentedValidatorInterface) {
                             if ($link = $validator->linkForError($error->getCode())) {
                                 ?>
                                 <a href="<?= $link ?>">

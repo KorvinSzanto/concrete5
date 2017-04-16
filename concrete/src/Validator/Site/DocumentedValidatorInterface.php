@@ -2,7 +2,7 @@
 
 namespace Concrete\Core\Validator\Site;
 
-interface DocumentedValidator
+interface DocumentedValidatorInterface
 {
 
     /**

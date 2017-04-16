@@ -5,7 +5,7 @@ namespace Concrete\Core\Validator\Site;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Entity\Site\Site;
 
-class CanonicalUrlValidator extends SiteValidator implements DocumentedValidator
+class CanonicalUrlValidator extends SiteValidator implements DocumentedValidatorInterface
 {
 
     const E_NOT_A_SITE = 1;

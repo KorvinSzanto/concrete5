@@ -23,7 +23,7 @@ class SiteValidatorManager extends ValidatorManager
      * Set the environment to validate against
      * Pass null to test all environments
      *
-     * @param string|null $environment Ex: EnvironmentSpecific::DEVELOPMENT
+     * @param string|null $environment Ex: EnvironmentSpecificInterface::DEVELOPMENT
      */
     public function setEnvironment($environment = null)
     {
@@ -33,7 +33,7 @@ class SiteValidatorManager extends ValidatorManager
     /**
      * Get the validators bound to this object in a specific environment
      *
-     * @param null|string $environment Ex: EnvironmentSpecific::DEVELOPMENT
+     * @param null|string $environment Ex: EnvironmentSpecificInterface::DEVELOPMENT
      * @return \Generator
      */
     public function getValidators($environment = null)
@@ -42,7 +42,7 @@ class SiteValidatorManager extends ValidatorManager
 
         foreach ($validators as $key => $validator) {
             // If it's not environment specific, just yield it
-            if (!$validator instanceof EnvironmentSpecific) {
+            if (!$validator instanceof EnvironmentSpecificInterface) {
                 yield $key => $validator;
                 continue;
             }
