@@ -2,7 +2,7 @@
 
 namespace Concrete\Core\Validator\Site;
 
-interface EnvironmentSpecific
+interface EnvironmentSpecificInterface
 {
 
     const PRODUCTION = 'prod';
@@ -10,7 +10,7 @@ interface EnvironmentSpecific
 
     /**
      * Get the environment this is meant for
-     * @return string [EnvironmentSpecific::PRODUCTION || EnvironmentSpecific::DEVELOPMENT]
+     * @return string [EnvironmentSpecificInterface::PRODUCTION || EnvironmentSpecificInterface::DEVELOPMENT]
      */
     public function getEnvironment();
 

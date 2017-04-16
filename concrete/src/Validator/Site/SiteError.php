@@ -27,7 +27,7 @@ class SiteError
 
     /**
      * @param int $code
-     * @return \Validator\Site\SiteError;
+     * @return \Concrete\Core\Validator\Site\SiteError;
      */
     public function setCode($code)
     {
@@ -72,7 +72,7 @@ class SiteError
     }
 
     /**
-     * @return \Concrete\Core\Attribute\ValidatorInterface
+     * @return \Concrete\Core\Validator\ValidatorInterface
      */
     public function getValidator()
     {
@@ -80,7 +80,7 @@ class SiteError
     }
 
     /**
-     * @param \Concrete\Core\Attribute\ValidatorInterface $validator
+     * @param \Concrete\Core\Validator\ValidatorInterface $validator
      * @return SiteError
      */
     public function setValidator($validator)

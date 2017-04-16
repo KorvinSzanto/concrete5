@@ -14,7 +14,7 @@ abstract class SiteValidator extends AbstractTranslatableValidator
      * @param string $string
      * @param string $severity
      * @param int $code
-     * @return \Validator\Site\SiteError
+     * @return \Concrete\Core\Validator\Site\SiteError
      */
     protected function getError($string, $severity, $code)
     {
