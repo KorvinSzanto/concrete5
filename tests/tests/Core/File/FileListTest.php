@@ -26,6 +26,7 @@ class FileListTest extends \FileStorageTestCase
             'FileVersionLog',
             'FileSetFiles',
         ));
+
         $this->metadatas = array_merge($this->metadatas, array(
             'Concrete\Core\Entity\Attribute\Key\Settings\NumberSettings',
             'Concrete\Core\Entity\Attribute\Key\Settings\Settings',
@@ -58,7 +59,7 @@ class FileListTest extends \FileStorageTestCase
         FileKey::add($number, array('akHandle' => 'height', 'akName' => 'Height'));
 
         $self = new static();
-        mkdir($self->getStorageDirectory());
+        @mkdir($self->getStorageDirectory());
         $self->getStorageLocation();
 
         $sample = dirname(__FILE__) . '/StorageLocation/fixtures/sample.txt';
