@@ -70,7 +70,7 @@ if (!count($result)) {
                                 }
                             }
                             echo '</p>';
-                            if ($validator instanceof \Concrete\Core\Validator\Site\HelpInterface) {
+                            if ($validator instanceof \Concrete\Core\Validator\Site\DocumentedValidatorInterface) {
                                 echo $validator->getHelpText($error->getCode());
                             }
                             ?>

@@ -5,7 +5,7 @@ namespace Concrete\Core\Validator\Site;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Entity\Site\Site;
 
-class SessionIpMismatchValidator extends SiteValidator implements HelpInterface, DocumentedValidatorInterface
+class SessionIpMismatchValidator extends SiteValidator implements DocumentedValidatorInterface
 {
     const E_NOT_ENFORCED = 1;
 
@@ -44,9 +44,9 @@ class SessionIpMismatchValidator extends SiteValidator implements HelpInterface,
      */
     public function getHelpText($code)
     {
-        $html = t('The default value for the configuration value 
-        <code>concrete.security.session.invalidate_on_ip_mismatch</code> has been changed to <code>false</code>. 
-        This can make it easier for attackers to hijack sessions');
+        $html = t(/*i18n: %s is a configuration key and value*/'The default value for the configuration value %s has been changed to %s.',
+            '<code>concrete.security.session.invalidate_on_ip_mismatch</code>', '<code>false</code>');
+        $html .= ' ' . t('This can make it easier for attackers to hijack sessions');
         return $html;
     }
 

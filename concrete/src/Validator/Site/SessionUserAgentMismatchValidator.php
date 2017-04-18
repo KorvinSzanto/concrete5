@@ -5,7 +5,7 @@ namespace Concrete\Core\Validator\Site;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Entity\Site\Site;
 
-class SessionUserAgentMismatchValidator extends SiteValidator implements HelpInterface, DocumentedValidatorInterface
+class SessionUserAgentMismatchValidator extends SiteValidator implements DocumentedValidatorInterface
 {
     const E_NOT_ENFORCED = 1;
 
@@ -44,12 +44,16 @@ class SessionUserAgentMismatchValidator extends SiteValidator implements HelpInt
      */
     public function getHelpText($code)
     {
-        $html = t('The default value for the configuration value 
-        <code>concrete.security.session.invalidate_on_user_agent_mismatch</code> has been changed to <code>false</code>. 
-        This can make it easier for attackers to hijack sessions');
-        return $html;
+        $lines = [];
+        $lines[] = t(/*i18n: %s is a configuration key and value*/'The default value for the configuration value %s has been changed to %s.',
+            '<code>concrete.security.session.invalidate_on_user_agent_mismatch</code>', '<code>false</code>');
+        $lines[] = t('This can make it easier for attackers to hijack sessions');
+        return join(' ', $lines);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function linkForError($code)
     {
         return 'https://documentation.concrete5.org/developers/configuration-and-keyvalue-storage/manual-configuration';

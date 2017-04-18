@@ -5,7 +5,7 @@ namespace Concrete\Core\Validator\Site;
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Entity\Site\Site;
 
-class XFrameOptionsValidator extends SiteValidator implements HelpInterface, DocumentedValidatorInterface
+class XFrameOptionsValidator extends SiteValidator implements DocumentedValidatorInterface
 {
     const E_NOT_ENFORCED = 1;
 
@@ -44,11 +44,11 @@ class XFrameOptionsValidator extends SiteValidator implements HelpInterface, Doc
      */
     public function getHelpText($code)
     {
-        $html = t('The default value for the configuration value 
-        <code>concrete.security.misc.x_frame_options</code> has been changed to <code>%s</code>. 
-        This can make it easier for attackers to perform clickjacking attacks.',
-            h($this->config->get('concrete.security.misc.x_frame_options')));
-        return $html;
+        $lines = [];
+        $lines[] = t(/*i18n: %s is a configuration key and value*/'The default value for the configuration value has been changed to %s.',
+            '<code>concrete.security.misc.x_frame_options</code>', '<code>' . h($this->config->get('concrete.security.misc.x_frame_options')) . '</code>');
+        $lines[] = t('This can make it easier for attackers to perform click-jacking attacks.');
+        return join(' ', $lines);
     }
 
     /**

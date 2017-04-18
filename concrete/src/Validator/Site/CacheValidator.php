@@ -7,7 +7,7 @@ use Concrete\Core\Entity\Site\Site;
 use Page;
 use URL;
 
-class CacheValidator extends SiteValidator implements DocumentedValidatorInterface, HelpInterface, EnvironmentSpecificInterface
+class CacheValidator extends SiteValidator implements DocumentedValidatorInterface, EnvironmentSpecificInterface
 {
 
     const E_DISABLED = 1;

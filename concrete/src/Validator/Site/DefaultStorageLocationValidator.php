@@ -8,7 +8,7 @@ use Concrete\Core\File\StorageLocation\StorageLocationFactory;
 use Page;
 use URL;
 
-class DefaultStorageLocationValidator extends SiteValidator implements HelpInterface, DocumentedValidatorInterface
+class DefaultStorageLocationValidator extends SiteValidator implements DocumentedValidatorInterface
 {
     const E_NOT_ENFORCED = 1;
 
@@ -52,11 +52,12 @@ class DefaultStorageLocationValidator extends SiteValidator implements HelpInter
         $p = Page::getByPath('/dashboard/system/files/storage');
         $path = URL::to($p->getCollectionPath());
         $title = h($p->getCollectionName());
-        $html = t('The default storage location stores files in a publicly available location. 
-        It is suggested that the storage location be not in a publicly accessible directory to prevent access to sensitive files.
-        You can create a new storage location from the %s page.',
+        $lines = [];
+        $lines[] = t('The default storage location stores files in a publicly available location.');
+        $lines[] = t('It is suggested that the storage location be not in a publicly accessible directory to prevent access to sensitive files.');
+        $lines[] = t(/*i18n: %s is a link to a page*/'You can create a new storage location from the %s page.',
             sprintf('<a href="%s">%s</a>', $path, $title));
-        return $html;
+        return join(' ', $lines);
     }
 
     /**

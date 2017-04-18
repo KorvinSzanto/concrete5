@@ -7,7 +7,7 @@ use Concrete\Core\Entity\Site\Site;
 use Page;
 use URL;
 
-class CanonicalUrlValidator extends SiteValidator implements DocumentedValidatorInterface, HelpInterface
+class CanonicalUrlValidator extends SiteValidator implements DocumentedValidatorInterface
 {
 
     const E_NOT_A_SITE = 1;
@@ -81,10 +81,10 @@ class CanonicalUrlValidator extends SiteValidator implements DocumentedValidator
         $title = h($p->getCollectionName());
         switch ($code) {
             case self::E_NOT_SET:
-                $html = t('To set the Canonical URL visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
+                $html = t(/*i18n: %s is a link to a page*/'To set the Canonical URL visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
                 break;
             case self::E_NOT_ENFORCED:
-                $html = t('To enable Canonical URL redirection visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
+                $html = t(/*i18n: %s is a link to a page*/'To enable Canonical URL redirection visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
                 break;
             default:
                 $html = '';
