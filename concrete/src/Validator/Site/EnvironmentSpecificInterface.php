@@ -5,7 +5,7 @@ namespace Concrete\Core\Validator\Site;
 interface EnvironmentSpecificInterface
 {
 
-    const PRODUCTION = 'prod';
+    const PRODUCTION = 'production';
     const DEVELOPMENT = 'dev';
 
     /**

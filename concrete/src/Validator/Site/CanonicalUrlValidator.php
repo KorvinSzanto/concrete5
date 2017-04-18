@@ -4,8 +4,10 @@ namespace Concrete\Core\Validator\Site;
 
 use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Entity\Site\Site;
+use Page;
+use URL;
 
-class CanonicalUrlValidator extends SiteValidator implements DocumentedValidatorInterface
+class CanonicalUrlValidator extends SiteValidator implements DocumentedValidatorInterface, HelpInterface
 {
 
     const E_NOT_A_SITE = 1;
@@ -47,7 +49,7 @@ class CanonicalUrlValidator extends SiteValidator implements DocumentedValidator
         }
 
         if (!$this->config->get('concrete.seo.redirect_to_canonical_url')) {
-            $this->addRecommended(self::E_NOT_ENFORCED, 'Canonical URL should be required', $error);
+            $this->addRecommended(self::E_NOT_ENFORCED, 'Redirecting to Canonical URL is not enabled', $error);
             $valid = false;
         }
 
@@ -67,5 +69,27 @@ class CanonicalUrlValidator extends SiteValidator implements DocumentedValidator
         } else {
             return null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHelpText($code)
+    {
+        $p = Page::getByPath('/dashboard/system/seo/urls');
+        $path = URL::to($p->getCollectionPath());
+        $title = h($p->getCollectionName());
+        switch ($code) {
+            case self::E_NOT_SET:
+                $html = t('To set the Canonical URL visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
+                break;
+            case self::E_NOT_ENFORCED:
+                $html = t('To enable Canonical URL redirection visit %s.', sprintf('<a href="%s">%s</a>', $path, $title));
+                break;
+            default:
+                $html = '';
+        }
+
+        return $html;
     }
 }

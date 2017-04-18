@@ -15,7 +15,12 @@ class SiteValidatorManager extends ValidatorManager
     public function __construct()
     {
         $this->validators = [
-            t('Canonical URL') => CanonicalUrlValidator::class
+            t('Canonical URL') => CanonicalUrlValidator::class,
+            t('Session User Agent Matching') => SessionUserAgentMismatchValidator::class,
+            t('Session IP Matching') => SessionIpMismatchValidator::class,
+            t('X Frame Options') => XFrameOptionsValidator::class,
+            t('Default Storage Location') => DefaultStorageLocationValidator::class,
+            t('Caching') => CacheValidator::class
         ];
     }
 
@@ -33,10 +38,9 @@ class SiteValidatorManager extends ValidatorManager
     /**
      * Get the validators bound to this object in a specific environment
      *
-     * @param null|string $environment Ex: EnvironmentSpecificInterface::DEVELOPMENT
      * @return \Generator
      */
-    public function getValidators($environment = null)
+    public function getValidators()
     {
         $validators = parent::getValidators();
 
@@ -48,7 +52,7 @@ class SiteValidatorManager extends ValidatorManager
             }
 
             // Otherwise, make sure it matches the environment
-            if ($validator->getEnvironment() === $environment) {
+            if ($validator->getEnvironment() === $this->environment) {
                 yield $key => $validator;
             }
         }
@@ -60,7 +64,7 @@ class SiteValidatorManager extends ValidatorManager
     public function isValid($mixed, \ArrayAccess $error = null)
     {
         $valid = true;
-        foreach ($this->getValidators($this->environment) as $name => $validator) {
+        foreach ($this->getValidators() as $name => $validator) {
             // Run the validation method
             if (!$validator->isValid($mixed, $error)) {
                 $valid = false;
