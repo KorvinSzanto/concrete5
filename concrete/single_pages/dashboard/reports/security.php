@@ -23,15 +23,14 @@ foreach ($result as $validatorName => $resultSet) {
         return $carry;
     }, null);
 
-    $color = $success;
-    $icon = 'times';
-    if (!count($resultSet)) {
-        $color = 'success';
-        $icon = 'check';
-    } elseif ($highestSeverity === ErrorLevel::RECOMMENDATION) {
+    $color = 'success';
+    $icon = 'check';
+    if ($highestSeverity === ErrorLevel::RECOMMENDATION) {
         $color = 'warning';
+        $icon = 'times';
     } elseif ($highestSeverity) {
         $color = 'danger';
+        $icon = 'times';
     }
     ?>
     <div class="col-sm-6">
