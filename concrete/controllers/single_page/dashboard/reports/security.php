@@ -29,6 +29,7 @@ class Security extends DashboardPageController
     public function view()
     {
         $result = new \ArrayIterator();
+        $this->manager->setEnvironment($this->app->environment());
         $this->manager->isValid($this->siteService->getSite(), $result);
 
         $this->set('result', $this->splitByValidator($result));
