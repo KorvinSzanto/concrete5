@@ -1,7 +1,6 @@
 <?php
 defined('C5_EXECUTE') or die("Access Denied.");
 $form = Loader::helper('form');
-$list = $result->getItemListObject();
 ?>
 
 <script type="text/template" data-template="search-results-table-body">
@@ -10,6 +9,7 @@ $list = $result->getItemListObject();
         data-file-manager-tree-node="<%=item.treeNodeID%>"
         data-file-manager-tree-node-type="<%=item.treeNodeTypeHandle%>"
         data-file-manager-file="<%=item.fID%>">
+        <td class="ccm-search-results-icon">
         <td class="ccm-search-results-icon">
             <%=item.resultsThumbnailImg%>
         </td>

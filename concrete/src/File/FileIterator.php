@@ -1,9 +1,11 @@
 <?php
-
 namespace Concrete\Core\File;
-;
+
+use Concrete\Core\Attribute\Category\FileCategory;
 use Concrete\Core\Database\Connection\Connection;
 use Concrete\Core\Entity\Attribute\Key\FileKey;
+use Concrete\Core\File\Set\Set;
+use Concrete\Core\Tree\Node\Node;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Traversable;
 
@@ -20,13 +22,21 @@ class FileIterator implements \IteratorAggregate
     /** @var \Doctrine\Common\Collections\Expr\Comparison[] */
     private $filter = [];
 
+    /** @var \Concrete\Core\Attribute\Category\FileCategory */
+    private $category;
+
     private $parameters = [];
 
     private $preWrappers = [];
     private $wrappers = [];
 
+    private $keywords = [];
+
     private $requiresVersion = false;
-    private $requiresAttributes = [];
+    private $requiresAttributes = false;
+    private $requiresUser = false;
+    private $requiresSets = false;
+    private $requiresTree = false;
 
     private $offset = 0;
 
@@ -34,19 +44,139 @@ class FileIterator implements \IteratorAggregate
 
     private $streaming = false;
 
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, FileCategory $category = null)
     {
         $this->connection = $connection;
+        $this->category = $category;
     }
 
+    /**
+     * @return $this
+     */
     public function includeVersion()
     {
         $this->requiresVersion = true;
+        return $this;
     }
 
-    public function includeAttribute(FileKey $key)
+    /**
+     * @return $this
+     */
+    public function includeAttributes()
     {
-        $this->requiresAttributes[$key->getAttributeKeyHandle()] = $key;
+        $this->requiresAttributes = true;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function includeUser()
+    {
+        $this->requiresUser = true;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function includeSets()
+    {
+        $this->requiresSets = true;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function includeTree()
+    {
+        $this->requiresTree = true;
+        return $this;
+    }
+
+    public function filterByKeyword($keyword)
+    {
+        $this->requiresVersion = true;
+        $this->requiresAttributes = true;
+        $this->requiresUser = true;
+
+        $this->keywords[] = $keyword;
+
+        return $this;
+    }
+
+    public function inFolder(Node $folder)
+    {
+        $this->requiresTree = true;
+
+        $this->filter['folder'] = $this->connection->getExpressionBuilder()->eq('treeNodeParentID', $folder->getTreeNodeID());
+        return $this;
+    }
+
+    public function filterByAttribute(FileKey $key, $value, $comparison = '=')
+    {
+        $handle = $key->getAttributeKeyHandle();
+        $x = 'ak_' . $handle;
+        $expr = $this->connection->getExpressionBuilder();
+        $match = null;
+
+        switch (strtolower($comparison)) {
+            case '<>':
+            case '!=':
+                if ($value === null) {
+                    $match = $expr->isNotNull($x);
+                } else {
+                    $match = $expr->neq($x, $expr->literal($value));
+                }
+                break;
+            case '=':
+            case '==':
+                if ($value === null) {
+                    $match = $expr->isNull($x);
+                } else {
+                    $match = $expr->eq($x, $expr->literal($value));
+                }
+                break;
+            case '>=':
+            case '=>';
+                $match = $expr->gte($x, $expr->literal($value));
+                break;
+            case '<=':
+            case '=<':
+                $match = $expr->lte($x, $expr->literal($value));
+                break;
+            case '>':
+                $match = $expr->gt($x, $expr->literal($value));
+                break;
+            case '<':
+                $match = $expr->lt($x, $expr->literal($value));
+                break;
+            case 'like':
+                $match = $expr->like($x, $expr->literal($value));
+                break;
+            case 'not like':
+                $match = $expr->notLike($x, $expr->literal($value));
+                break;
+            case 'in':
+                if (!is_array($value)) {
+                    throw new \InvalidArgumentException(t('Invalid value provided for "in" comparison. Argument 2 must be an array.'));
+                }
+                $match = $expr->in($x, $value);
+                break;
+            case 'not in':
+                if (!is_array($value)) {
+                    throw new \InvalidArgumentException(t('Invalid value provided for "not in" comparison. Argument 2 must be an array.'));
+                }
+                $match = $expr->notIn($x, $value);
+                break;
+            default:
+                throw new \InvalidArgumentException(t('Unsupported comparison "%s".', $comparison));
+        }
+
+        $this->requiresAttributes = true;
+        $this->filter[] = $match;
+
         return $this;
     }
 
@@ -62,35 +192,29 @@ class FileIterator implements \IteratorAggregate
         return $this->prepareQuery();
     }
 
+    protected function joinIf($conditional, $join, $table, $alias, $pivot, $qb)
+    {
+        if ($conditional) {
+            $qb = $qb->addSelect($alias . '.*')
+                ->leftJoin($join, $table, $alias, $pivot);
+        }
+
+        return $qb;
+    }
+
     /**
      * Get the query object that will output the list of files
      */
     protected function prepareQuery()
     {
-        $qb = $this->connection->createQueryBuilder()
-            ->select('f.*')->from('Files', 'f');
+        $qb = $this->connection->createQueryBuilder()->select('f.*')->from('Files', 'f');
 
-        if ($this->requiresVersion) {
-            $qb = $qb->addSelect('fv.*')->leftJoin('f', 'FileVersions', 'fv', 'f.fID = fv.fID');
-        }
-
-        $this->addAttributes($qb);
-
-        foreach ($this->getSort() as $sort => $direction) {
-            $qb = $qb->orderBy($sort, $direction);
-        }
-
-        if ($this->offset) {
-            $qb = $qb->setFirstResult($this->offset);
-        }
-
-        if ($this->length && !$this->streaming) {
-            $qb = $qb->setMaxResults($this->length);
-        }
-
-        foreach ($this->filter as $comparison) {
-            $qb = $qb->andWhere($comparison);
-        }
+        $qb = $this->applyJoins($qb);
+        $qb = $this->applySort($qb);
+        $qb = $this->applyOffset($qb);
+        $qb = $this->applyLimit($qb);
+        $qb = $this->applyFilter($qb);
+        $qb = $this->applyKeywords($qb);
 
         $results = $qb->execute();
 
@@ -150,6 +274,12 @@ class FileIterator implements \IteratorAggregate
     {
         $this->requiresVersion = true;
         return $this->sortByColumn("fv.{$column}", $direction);
+    }
+
+    public function sortByAttribute(FileKey $key, $direction = 'asc')
+    {
+        $this->requiresAttributes = true;
+        return $this->sortByColumn('ak_' . $key->getAttributeKeyHandle(), $direction);
     }
 
     public function sortByName($direction = 'asc')
@@ -250,8 +380,24 @@ class FileIterator implements \IteratorAggregate
         }
     }
 
+    public function filterBySet(Set $set = null)
+    {
+        $this->requiresSets = true;
+        $expr = $this->connection->getExpressionBuilder();
+
+        if ($set) {
+            $this->filter['set'] = $expr->eq('fsf.fsID', $set->getFileSetID());
+        } else {
+            $this->filter['set'] = $expr->isNull('fsf.fsID');
+        }
+
+        return $this;
+    }
+
     /**
-     * @param string|array $type The type or types to filter by
+     * Filter the list by extensions
+     *
+     * @param string|array $type The extension or extensions to filter by
      * @return \Concrete\Core\File\FileIterator
      */
     public function filterByExtension($type)
@@ -267,23 +413,118 @@ class FileIterator implements \IteratorAggregate
         return $this;
     }
 
-    protected function addAttributes(QueryBuilder $qb)
+    /**
+     * Filter by a type integer
+     * Maps to constants on \Concrete\Core\File\Type\Type
+     *
+     * @param int|array $type The type or types to filter by
+     * @return \Concrete\Core\File\FileIterator
+     */
+    public function filterByType($type)
     {
-        if ($this->requiresAttributes) {
-            $qb->join('fv', 'FileAttributeValues', 'fav', 'fv.fvID=fav.fvID AND fv.fID = fav.fID');
-
-            $qb->addSelect('FileAttributeKeys', 'fak');
-            $qb->addSelect('FileAttributeValues', 'fak');
-
-            /** @var FileKey $key */
-            foreach ($this->requiresAttributes as $key) {
-                $type = $key->getAttributeType();
-                /** @var \Concrete\Core\Attribute\Controller $controller */
-                $controller = $type->getController();
-                $controller->table->getAttributeValueClass();
-
-                $qb->addSelect($key->getAttributeType());
-            }
+        $this->requiresVersion = true;
+        $expr = $this->connection->getExpressionBuilder();
+        if (is_array($type)) {
+            $this->filter['type'] = $expr->in('fvType', array_map([$expr, 'literal'], $type));
+        } else {
+            $this->filter['type'] = $expr->comparison('fvType', '=', $expr->literal($type));
         }
+
+        return $this;
+    }
+
+    protected function applyKeywords(QueryBuilder $qb)
+    {
+        $expr = $qb->expr();
+        $keys = [];
+
+        if ($this->category) {
+            $keys = $this->category->getSearchableIndexedList();
+        }
+
+        foreach ($this->keywords as $keyword) {
+            $key = uniqid(':keyword_', false);
+            $expressions = [
+                $expr->like('fv.fvFilename', $key),
+                $expr->like('fv.fvDescription', $key),
+                $expr->like('fv.fvTitle', $key),
+                $expr->like('fv.fvTags', $key),
+                $expr->eq('u.uName', $key),
+            ];
+
+            foreach ($keys as $attributeKey) {
+                $controller = $attributeKey->getController();
+                $expressions[] = $controller->searchKeywords($keyword, $qb);
+            }
+
+            $qb->andWhere(call_user_func_array([$expr, 'orX'], $expressions));
+            $qb->setParameter($key, '%' . $keyword . '%');
+        }
+
+        return $qb;
+    }
+
+    /**
+     * @param $qb
+     * @return mixed
+     */
+    protected function applySort($qb)
+    {
+        foreach ($this->getSort() as $sort => $direction) {
+            $qb = $qb->orderBy($sort, $direction);
+        }
+        return $qb;
+    }
+
+    /**
+     * @param $qb
+     * @return mixed
+     */
+    protected function applyOffset($qb)
+    {
+        if ($this->offset) {
+            $qb = $qb->setFirstResult($this->offset);
+        }
+        return $qb;
+    }
+
+    /**
+     * @param $qb
+     * @return mixed
+     */
+    protected function applyLimit($qb)
+    {
+        if ($this->length && !$this->streaming) {
+            $qb = $qb->setMaxResults($this->length);
+        }
+        return $qb;
+    }
+
+    /**
+     * @param $qb
+     * @return mixed
+     */
+    protected function applyFilter($qb)
+    {
+        foreach ($this->filter as $comparison) {
+            $qb = $qb->andWhere($comparison);
+        }
+        return $qb;
+    }
+
+    /**
+     * @param $qb
+     * @return mixed
+     */
+    protected function applyJoins($qb)
+    {
+        $qb = $this->joinIf($this->requiresVersion, 'f', 'FileVersions', 'fv', 'f.fID = fv.fID', $qb);
+        $qb = $this->joinIf($this->requiresUser, 'f', 'Users', 'u', 'f.uID = u.uID', $qb);
+        $qb = $this->joinIf($this->requiresAttributes, 'f', 'FileSearchIndexAttributes', 'fsi', 'f.fID=fsi.fID', $qb);
+        $qb = $this->joinIf($this->requiresSets, 'f', 'FileSetFiles', 'fsf', 'f.fID=fsf.fID', $qb);
+        $qb = $this->joinIf($this->requiresTree, 'f', 'TreeFileNodes', 'tfn', 'f.fID=tfn.fID', $qb);
+        $qb = $this->joinIf($this->requiresTree, 'tfn', 'TreeNodes', 'tn', 'tfn.treeNodeID=tn.treeNodeID', $qb);
+
+        return $qb;
     }
 }

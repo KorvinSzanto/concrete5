@@ -2,9 +2,11 @@
 
 namespace Core\File;
 
+use Concrete\Core\Attribute\Category\FileCategory;
 use Concrete\Core\Attribute\Key\FileKey;
 use Concrete\Core\Entity\File\File;
 use Concrete\Core\File\FileIterator;
+use Concrete\Core\File\Type\Type;
 use Concrete\Tests\Core\File\FileListTest;
 
 class FileIteratorTest extends FileListTest
@@ -124,7 +126,30 @@ class FileIteratorTest extends FileListTest
     {
         $key = FileKey::getByHandle('width');
 
-        $this->files()->includeAttribute($key)->all();
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 100, '>')->all());
+        $this->assertCount(0, $this->files()->filterByAttribute($key, 100, '<')->all());
+    }
+
+    public function testFilterByAttributeComparison()
+    {
+        $key = FileKey::getByHandle('width');
+
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '=')->all());
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '==')->all());
+
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 100, '>')->all());
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '>=')->all());
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '=>')->all());
+
+        $this->assertCount(0, $this->files()->filterByAttribute($key, 100, '<')->all());
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '<=')->all());
+        $this->assertCount(5, $this->files()->filterByAttribute($key, 113, '=<')->all());
+
+        $this->assertCount(5, $this->files()->filterByAttribute($key, '%113%', 'like')->all());
+        $this->assertCount(0, $this->files()->filterByAttribute($key, '%113%', 'not like')->all());
+
+        $this->assertCount(5, $this->files()->filterByAttribute($key, [1,2,3,113], 'in')->all());
+        $this->assertCount(0, $this->files()->filterByAttribute($key, [1,2,3,113], 'not in')->all());
     }
 
     public static function assertSame($expected, $actual, $message = '')
@@ -166,52 +191,85 @@ class FileIteratorTest extends FileListTest
         }
     }
 
-    public function testGetPaginationObject()
-    {
-    }
-
-    public function testGetUnfilteredTotal()
-    {
-    }
-
-    public function testGetUnfilteredTotalFromPagination()
-    {
-    }
-
     public function testFilterByTypeValid1()
     {
+        $this->assertCount(5, $this->files()->filterByType(Type::T_IMAGE)->all());
+        $this->assertCount(6, $this->files()->filterByType(Type::T_TEXT)->all());
     }
 
     public function testFilterByExtensionAndType()
     {
+        $this->assertCount(6, $this->files()
+            ->filterByType(Type::T_TEXT)
+            ->filterByExtension('txt')
+            ->all());
     }
 
     public function testFilterByKeywords()
     {
+        $this->assertCount(5, $this->files()->filterByKeyword('le')->all());
     }
 
     public function testFilterBySet()
     {
+        $fs = \FileSet::add('test');
+        $f = \File::getByID(1);
+        $f2 = \File::getByID(4);
+        $fs->addFileToSet($f);
+        $fs->addFileToSet($f2);
+
+        $fs2 = \FileSet::add('test2');
+        $fs2->addFiletoSet($f);
+
+        // Files in the sets
+        $this->assertCount(2, $this->files()->filterBySet($fs)->all());
+        $this->assertCount(1, $this->files()->filterBySet($fs2)->all());
+
+        // Files not in any set
+        $this->assertCount(9, $this->files()->filterBySet(null)->all());
     }
 
     public function testSortByFilename()
     {
+        $this->assertEquals('awesome.txt', $this->files()->sortByName('asc')->first()['fvFilename']);
+        $this->assertEquals('testing.txt', $this->files()->sortByName('desc')->first()['fvFilename']);
+    }
+
+    public function testSortByAttribute()
+    {
+        $this->connection()->exec('UPDATE FileSearchIndexAttributes SET ak_width=10000 where fID=10');
+        $this->connection()->exec('UPDATE FileSearchIndexAttributes SET ak_width=1 where fID=9');
+
+        $key = FileKey::getByHandle('width');
+        $this->assertEquals('9', $this->files()->filterByType(Type::T_IMAGE)->sortByAttribute($key, 'asc')->first()['fID']);
+        $this->assertEquals('10', $this->files()->filterByType(Type::T_IMAGE)->sortByAttribute($key, 'desc')->first()['fID']);
+
+        $this->connection()->exec('UPDATE FileSearchIndexAttributes SET ak_width=113 where ak_width > 0');
     }
 
     public function testAutoSort()
     {
+        // Not supported
     }
 
     public function testPaginationPagesWithoutPermissions()
     {
+        // Not supported
     }
 
     public function testPaginationWithPermissions()
     {
+        // Not supported
     }
 
     public function testFileSearchDefaultColumnSet()
     {
+        // Not supported
+    }
+
+    public function testGetPaginationObject()
+    {
+        // Not supported
     }
 
 }
