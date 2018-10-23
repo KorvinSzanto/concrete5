@@ -25,6 +25,4 @@ class CheckPermissionsRoutine implements RoutineInterface
         }
         return $valid;
     }
-
-
 }

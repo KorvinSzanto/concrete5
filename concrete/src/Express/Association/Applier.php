@@ -11,13 +11,25 @@ use Concrete\Core\Express\EntryList;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class Applier
+class Applier implements ApplierInterface
 {
     protected $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
-    {
+    protected $manyToMany;
+
+    protected $oneToMany;
+
+
+    use ApplierTrait;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ManyToManyApplier $manyToMany,
+        OneToManyApplier $oneToMany
+    ) {
         $this->entityManager = $entityManager;
+        $this->manyToMany = $manyToMany;
+        $this->oneToMany = $oneToMany;
     }
 
     /**
@@ -67,7 +79,7 @@ class Applier
             }
             if ($selectedEntry) {
                 // let's loop through the inverse association and remove this one from it.
-                $inversedAssociation = $this->getInverseAssociation($association);
+                $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
                 $manyAssociation = $selectedEntry->getEntryAssociation($inversedAssociation);
                 if ($manyAssociation) {
                     foreach($manyAssociation->getSelectedEntriesCollection() as $selectedAssociationEntry) {
@@ -91,7 +103,7 @@ class Applier
 
         // Now, on the associated entry, populate a Many association so we kee this up to date.
         // Let's see if there's an existing one we can use.
-        $inversedAssociation = $this->getInverseAssociation($association);
+        $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
         $manyAssociation = $associatedEntry->getEntryAssociation($inversedAssociation);
         if (!is_object($manyAssociation)) {
             $manyAssociation = new Entry\ManyAssociation();
@@ -120,6 +132,8 @@ class Applier
 
     public function associateOneToMany(Association $association, Entry $entry, $associatedEntries)
     {
+        return $this->oneToMany->associate($association, $entry, $associatedEntries);
+
         // First create the owning entry association
         $manyAssociation = $entry->getEntryAssociation($association);
         if (!is_object($manyAssociation)) {
@@ -129,7 +143,7 @@ class Applier
         }
 
         // Locate the inverse association
-        $inversedAssociation = $this->getInverseAssociation($association);
+        $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
 
         foreach($associatedEntries as $selectedEntry) {
             $oneAssociation = $selectedEntry->getEntryAssociation($inversedAssociation);
@@ -180,7 +194,7 @@ class Applier
         $possibleResults = $list->getResults();
 
         // Locate the inverse association
-        $inversedAssociation = $this->getInverseAssociation($association);
+        $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
 
         foreach($possibleResults as $possibleResult) {
             $oneAssociation = $possibleResult->getEntryAssociation($inversedAssociation);
@@ -233,6 +247,9 @@ class Applier
 
     public function associateManyToMany(Association $association, Entry $entry, $associatedEntries)
     {
+        return $this->manyToMany->associate($association, $entry, $associatedEntries);
+
+
         // First create the owning entry association
         $manyAssociation = $entry->getEntryAssociation($association);
         if (!is_object($manyAssociation)) {
@@ -253,10 +270,7 @@ class Applier
             $associatedAssociationEntries[] = $associatedAssociationEntry;
         }
 
-        foreach($manyAssociation->getSelectedEntriesCollection() as $manyAssociationSelectedEntry) {
-            $this->entityManager->remove($manyAssociationSelectedEntry);
-        }
-        $this->entityManager->flush();
+        $this->clearAssociation($association, $this->entityManager);
 
         $manyAssociation->setSelectedEntries($associatedAssociationEntries);
         $this->entityManager->persist($manyAssociation);
@@ -269,9 +283,12 @@ class Applier
         $possibleResults = $list->getResults();
 
         // Locate the inverse association
-        $inversedAssociation = $this->getInverseAssociation($association);
+        $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
 
+        // Loop over every possible result
         foreach($possibleResults as $possibleResult) {
+
+            // Make sure we have a valid ManyAssociation for this
             $manyAssociation = $possibleResult->getEntryAssociation($inversedAssociation);
             if (!is_object($manyAssociation)) {
                 $manyAssociation = new Entry\ManyAssociation();
@@ -279,19 +296,8 @@ class Applier
                 $manyAssociation->setEntry($possibleResult);
             }
 
-
-            if (in_array($possibleResult, $associatedEntries)) {
-                $selectedEntries = $manyAssociation->getSelectedEntries();
-                // If the item appears in the request (meaning we want it to be selected):
-                if (!$selectedEntries->contains($entry)) {
-                    $associationEntry = new Entry\AssociationEntry();
-                    $associationEntry->setAssociation($manyAssociation);
-                    $associationEntry->setEntry($entry);
-                    $associationEntry->setDisplayOrder(count($selectedEntries));
-                    $manyAssociation->getSelectedEntriesCollection()->add($associationEntry);
-                }
-                $this->entityManager->persist($manyAssociation);
-            } else {
+            // If this isn't a passed entry, delete the passed entry from its selected entries
+            if (!in_array($possibleResult, $associatedEntries)) {
                 $selectedEntriesCollection = $manyAssociation->getSelectedEntriesCollection();
                 if (count($selectedEntriesCollection) > 0) {
                     foreach($selectedEntriesCollection as $result) {
@@ -300,7 +306,21 @@ class Applier
                         }
                     }
                 }
+
+                continue;
             }
+
+
+            $selectedEntries = $manyAssociation->getSelectedEntries();
+            // If the item appears in the request (meaning we want it to be selected):
+            if (!$selectedEntries->contains($entry)) {
+                $associationEntry = new Entry\AssociationEntry();
+                $associationEntry->setAssociation($manyAssociation);
+                $associationEntry->setEntry($entry);
+                $associationEntry->setDisplayOrder(count($selectedEntries));
+                $manyAssociation->getSelectedEntriesCollection()->add($associationEntry);
+            }
+            $this->entityManager->persist($manyAssociation);
         }
 
         $this->entityManager->flush();
@@ -309,7 +329,7 @@ class Applier
     public function associateOneToOne(Association $association, Entry $entry, Entry $associatedEntry)
     {
         // Locate the inverse association
-        $inversedAssociation = $this->getInverseAssociation($association);
+        $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager);
 
         $oneAssociation = $entry->getEntryAssociation($association);
         if (!is_object($oneAssociation)) {
@@ -357,7 +377,7 @@ class Applier
             }
             if ($selectedEntry) {
                 // let's loop through the inverse association and remove this one from it.
-                $otherInversedAssociation = $this->getInverseAssociation($inversedAssociation);
+                $otherInversedAssociation = $this->getInverseAssociation($inversedAssociation, $this->entityManager);
                 $otherOneAssociation = $selectedEntry->getEntryAssociation($otherInversedAssociation);
                 if ($otherOneAssociation) {
                     $otherOneAssociationCollection = $otherOneAssociation->getSelectedEntriesCollection();
@@ -382,7 +402,7 @@ class Applier
     {
         $entryAssociation = $entry->getEntryAssociation($association);
         if ($entryAssociation) {
-            $inversedAssociation = $this->getInverseAssociation($association);
+            $inversedAssociation = $this->getInverseAssociation($association, $this->entityManager, $this->entityManager);
             $associatedEntries = $entryAssociation->getSelectedEntriesCollection();
             foreach($associatedEntries as $associatedEntry) {
                 $associatedEntryAssociation = $associatedEntry->getEntry()->getEntryAssociation($inversedAssociation);
@@ -417,17 +437,5 @@ class Applier
         }
         $this->entityManager->flush();
     }
-
-    protected function getInverseAssociation(Association $association)
-    {
-        return $this->entityManager->getRepository(Association::class)
-            ->findOneBy([
-                'target_property_name' => $association->getInversedByPropertyName(),
-                'inversed_by_property_name' => $association->getTargetPropertyName(),
-                'target_entity' => $association->getSourceEntity(),
-                'source_entity' => $association->getTargetEntity()
-            ]);
-    }
-
 
 }
