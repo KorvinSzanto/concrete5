@@ -131,7 +131,13 @@ if ($ve->has()) {
         }
     }
     foreach ($attachmentIDs as $attachmentID) {
-        $msg->attachFile(File::getByID($attachmentID));
+        $file = File::getByID($attachmentID);
+        if ($file && !$file->isError()) {
+            $checker = new \Concrete\Core\Permission\Checker($file);
+            if ($checker->canViewFile()) {
+                $msg->attachFile($file);
+            }
+        }
     }
 
     $event = new Concrete\Core\Conversation\Message\MessageEvent($msg);
