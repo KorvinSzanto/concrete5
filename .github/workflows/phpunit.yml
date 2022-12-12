@@ -28,6 +28,8 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
+          - "8.2"
         dependencies:
           - "locked"
         operating-system:
@@ -44,9 +46,6 @@ jobs:
             operating-system: "ubuntu-latest"
             dependencies: "locked"
             composer: "composer:v1, prestissimo"
-          - php-version: 8.1
-            operating-system: "ubuntu-latest"
-            dependencies: "locked"
 
     steps:
       - name: Enable code coverage
