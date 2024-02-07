@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Concrete\Core\Support\CodingStyle\Fixer;
 
 use PhpCsFixer\AbstractFixer;
-use PhpCsFixer\Fixer\ConfigurationDefinitionFixerInterface;
+use PhpCsFixer\Fixer\ConfigurableFixerInterface;
 use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
+use PhpCsFixer\FixerConfiguration\FixerConfigurationResolverInterface;
 use PhpCsFixer\FixerConfiguration\FixerOptionBuilder;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\FixerDefinition\FixerDefinition;
@@ -14,7 +15,7 @@ use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
 
-final class InlineTagFixer extends AbstractFixer implements ConfigurationDefinitionFixerInterface
+final class InlineTagFixer extends AbstractFixer implements ConfigurableFixerInterface
 {
     public const OPTION_SPACEBEFORE = 'space_before';
 
@@ -45,7 +46,7 @@ final class InlineTagFixer extends AbstractFixer implements ConfigurationDefinit
      *
      * @see \PhpCsFixer\AbstractFixer::getName()
      */
-    public function getName()
+    public function getName(): string
     {
         return 'ConcreteCMS/' . parent::getName();
     }
@@ -55,7 +56,7 @@ final class InlineTagFixer extends AbstractFixer implements ConfigurationDefinit
      *
      * @see \PhpCsFixer\Fixer\DefinedFixerInterface::getDefinition()
      */
-    public function getDefinition()
+    public function getDefinition(): \PhpCsFixer\FixerDefinition\FixerDefinitionInterface
     {
         $sample = <<<'EOT'
 <?=1?> <?= 1 ?> <?=  1  ?>
@@ -86,7 +87,7 @@ EOT
      *
      * @see \PhpCsFixer\Fixer\FixerInterface::isCandidate()
      */
-    public function isCandidate(Tokens $tokens)
+    public function isCandidate(Tokens $tokens): bool
     {
         if (
             $this->configuration[self::OPTION_SPACEBEFORE] === self::SPACE_KEEP
@@ -104,7 +105,7 @@ EOT
      *
      * @see \PhpCsFixer\AbstractFixer::createConfigurationDefinition()
      */
-    protected function createConfigurationDefinition()
+    protected function createConfigurationDefinition(): FixerConfigurationResolverInterface
     {
         return new FixerConfigurationResolver([
             (new FixerOptionBuilder(self::OPTION_SPACEBEFORE, 'The desired number of spaces at the beginning of the tag.'))
@@ -127,7 +128,7 @@ EOT
      *
      * @see \PhpCsFixer\AbstractFixer::applyFix()
      */
-    protected function applyFix(SplFileInfo $file, Tokens $tokens)
+    protected function applyFix(SplFileInfo $file, Tokens $tokens): void
     {
         $index = 0;
         for (;;) {
@@ -272,7 +273,7 @@ EOT
             if ($token === null) {
                 break;
             }
-            if ($semicolons && $token->getContent() === ';' || $whitespaces && $token->isWhitespace()) {
+            if (($semicolons && $token->getContent() === ';') || ($whitespaces && $token->isWhitespace())) {
                 array_unshift($result, $token);
 
                 continue;

@@ -3,12 +3,15 @@
 namespace Concrete\Core\Support\CodingStyle;
 
 use DirectoryIterator;
+use PhpCsFixer\Console\Output\OutputContext;
 use PhpCsFixer\Console\Output\ProcessOutput;
+use PhpCsFixer\Console\Output\Progress\DotsOutput;
 use PhpCsFixer\FixerFileProcessedEvent;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Terminal;
 
 class PhpFixer
 {
@@ -98,15 +101,22 @@ class PhpFixer
             $this->runner->addStep($this->options, $paths, $flags);
         }
 
-        $progressOutput = new ProcessOutput($output, $this->runner->getEventDispatcher()->getEventDispatcher(), null, $this->runner->calculateNumberOfFiles());
+        $count = $this->runner->calculateNumberOfFiles();
+        // Max 100 per line, add 11 for spaces () and %, and add the str length of the total count twice
+        $terminalWidth = min(111 + (strlen("{$count}") * 2), (new Terminal())->getWidth());
+
+        $config = new OutputContext($output, $terminalWidth, $count);
+        $progressOutput = new DotsOutput($config);
         $counters = [];
-        $counter = function (FixerFileProcessedEvent $e) use (&$counters) {
+        $counter = function (FixerFileProcessedEvent $e) use (&$counters, $progressOutput) {
             $status = $e->getStatus();
             if (isset($counters[$status])) {
                 ++$counters[$status];
             } else {
                 $counters[$status] = 1;
             }
+
+            $progressOutput->onFixerFileProcessed($e);
         };
         $this->runner->getEventDispatcher()->addListener(FixerFileProcessedEvent::NAME, $counter);
         try {

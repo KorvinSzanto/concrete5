@@ -15,7 +15,7 @@
     "wikimedia/composer-merge-plugin": "~1.3|~2.0.1"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "2.19.2",
+    "friendsofphp/php-cs-fixer": "dev-master",
     "phpunit/phpunit": "^11",
     "mockery/mockery": "^1.6.7",
     "mlocati/ci-info": "^1"

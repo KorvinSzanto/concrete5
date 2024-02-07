@@ -3,6 +3,7 @@
 namespace Concrete\Core\Support\CodingStyle;
 
 use PhpCsFixer\Differ\DifferInterface;
+use PhpCsFixer\Differ\UnifiedDiffer;
 use SebastianBergmann\Diff\Differ as SBDiffer;
 
 class Differ implements DifferInterface
@@ -25,7 +26,7 @@ class Differ implements DifferInterface
     public function __construct($maxTrailingUnchangedLines = 3)
     {
         $this->maxTrailingUnchangedLines = max(0, (int) $maxTrailingUnchangedLines);
-        $this->differ = new SBDiffer();
+        $this->differ = new UnifiedDiffer();
     }
 
     /**
@@ -33,7 +34,7 @@ class Differ implements DifferInterface
      *
      * @see \PhpCsFixer\Differ\DifferInterface::diff()
      */
-    public function diff($old, $new)
+    public function diff(string $old, string $new, ?\SplFileInfo $file = null): string
     {
         $diff = $this->differ->diff($old, $new);
         $lines = explode("\n", rtrim($diff, "\n"));
