@@ -1,0 +1,9 @@
+<div class="container">
+    <div class="row gx-xl-8">
+        {% for i in 1..6 %}
+            <div class="col-md-4 col-6">
+                {{ ContainerArea(container, 'Item ' ~ i, c) | raw }}
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,16 @@
+<div class="stripe one-column bg-light">
+    {% set titleArea = ContainerArea(container, 'Title', c).ifPopulatedOrEditMode() %}
+    {% if titleArea %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="stripe-title">
+                        {{ titleArea | raw }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {{ ContainerArea(container, 'Body', c).setAreaGridMaximumColumns(12).enableGridContainer() | raw }}
+</div>

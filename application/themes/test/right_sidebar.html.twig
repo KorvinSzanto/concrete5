@@ -1,0 +1,13 @@
+{% extends 'default.html.twig' %}
+{% block main %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                {{ Area('Main', c) | raw }}
+            </div>
+            <div class="col-md-4 col-sidebar">
+                {{ Area('Sidebar', c) | raw }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

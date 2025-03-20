@@ -1,0 +1,17 @@
+{% extends 'default.html.twig' %}
+{% block main %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                {{ Area('Resource Thumbnail', c) | raw }}
+            </div>
+            <div class="col-md-6">
+                {{ Area('Resource Title', c) | raw }}
+                {{ Area('Resource Content', c) | raw }}
+            </div>
+            <div class="col-md-6">
+                {{ Area('Resource Data', c) | raw }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

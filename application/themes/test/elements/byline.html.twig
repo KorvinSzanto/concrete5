@@ -1,0 +1,12 @@
+<div class="blog-author-byline">
+    {% set avatar = author.getAvatar() %}
+    {% if author and avatar %}
+        <div class="blog-author-byline-avatar">
+            <img src="{{ avatar }}">
+        </div>
+    {% endif %}
+
+    <div class="blog-author-byline-date">
+        {{ date | date('F d, Y • g:iA') }}
+    </div>
+</div>

@@ -1,0 +1,18 @@
+{% extends './templates/skeleton.html.twig' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                {{ element('system_errors', {
+                    'format': 'block',
+                    'error': error ?: null,
+                    'success': success ?: null,
+                    'message': message ?: null,
+                }) | raw }}
+
+                {{ innerContent | raw}}
+            </div>
+        </div>
+    </div>
+{% endblock %}

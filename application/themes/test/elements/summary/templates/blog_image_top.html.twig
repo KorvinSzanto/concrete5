@@ -1,0 +1,12 @@
+<div class="ccm-summary-template-blog-image-top mb-3 mb-md-0">
+    <a href="{{ link }}">
+        <img class="img-fluid mb-3" src="{{ thumbnail.getThumbnailURL('blog_entry_thumbnail') }}">
+    </a>
+    <h5><a href="{{ link }}">{{ title }}</a></h5>
+    {% if author and date %}
+        {{ element('byline', {author, date}) | raw }}
+    {% endif %}
+    {% if description %}
+        <p>{{ description }}</p>
+    {% endif %}
+</div>

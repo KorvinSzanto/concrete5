@@ -1,0 +1,12 @@
+{% extends './templates/skeleton.html.twig' %}
+{% block content %}
+    {% block page_header %}
+        {{ Area('Page Header', c).enableGridContainer() | raw }}
+    {% endblock %}
+    {% block main %}
+        {{ Area('Main', c).enableGridContainer() | raw }}
+    {% endblock %}
+    {% block page_footer %}
+        {{ Area('Page Footer', c).enableGridContainer() | raw }}
+    {% endblock %}
+{% endblock %}

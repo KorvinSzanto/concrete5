@@ -1,0 +1,97 @@
+{% set user = user ? app('User') %}
+
+{% if authType %}
+    {% set active = authType %}
+    {% set activeAuths = [authType] %}
+{% else %}
+    {% set activeAuths = authTypeGetList(true, true) %}
+{% endif %}
+
+{% set attributeMode = required_attributes|length > 0 %}
+{% set site = app('site').getSite() %}
+
+<div class="login-page">
+    <div class="container">
+        <div class="login-page-header">
+            {% set disclaimer = Area('Disclaimer', c).ifPopulatedOrEditMode(c) %}
+            {% if disclaimer %}
+                <div class="row login-page-disclaimer-area">
+                    <div class="col-12">
+                        {{ disclaimer | raw }}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="login-page-title">
+                        {% if attribute_mode %}
+                            {{
+                                t(
+                                    'Sign in to <b>%s</b>',
+                                    h(site.getSiteName())
+                                ) | raw
+                            }}
+                            {{ t('Sign in to <b>%s</b>', h(site.getSiteName())) | raw }}
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        {% if attribute_mode %}
+            {% set attribute_helper = app('Concrete\\Core\\Form\\Service\\Widget\\Attribute') %}
+
+            <div class="row login-page-content attribute-mode">
+                <form action="{{ view.action('fill_attributes') }}" method="POST">
+                    <div data-handle="required_attributes"
+                         class="authentication-type authentication-type-required-attributes">
+                        <div class="ccm-required-attribute-form">
+                            {% for key in required_attributes %}
+                                {{ attribute_helper.display(key, true) }}
+                            {% endfor %}
+                        </div>
+                        <div class="form-group clearfix">
+                            <button class="btn btn-primary float-end">
+                                {{ t('Submit') }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        {% else %}
+
+            <div class="row login-page-content">
+                <div class="col-12">
+                    {% if user.isRegistered %}
+                        <div class="lead text-center mb-5">
+                            {{ t('You are already logged in.') }}
+                        </div>
+
+                        <div class="d-grid ms-5 me-5">
+                            <a href="{{ url('/') }}" class="btn btn-outline-secondary">
+                                {{ t('Return to Home') }}
+                            </a>
+                        </div>
+                    {% else %}
+                        {% for auth in activeAuths %}
+                            {% set handle = auth.getAuthenticationTypeHandle() %}
+                            <div data-handle="{{ handle }}" class="authentication-type authentication-type-{{ handle }}">
+                                {{ auth | bufferMethod('renderForm', [auth_type_element ?: 'form', auth_type_params ?: []]) | raw }}
+                            </div>
+
+                            {% if loop.index == 1 and activeAuths|length == 1 and config('concrete.user.registration.enabled') %}
+                                <div class="text-center" style="margin-bottom: 5px;">
+                                    {{ t('or') }}
+                                </div>
+                            {% elseif loop.index == 1 and activAuths > 1 %}
+                                <hr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>

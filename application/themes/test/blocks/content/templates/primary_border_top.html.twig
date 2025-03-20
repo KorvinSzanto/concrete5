@@ -1,0 +1,7 @@
+<div class="border-top border-primary border-5 pt-5 ccm-block-content">
+    {% if not content and c.isEditMode() %}
+        <div class="ccm-edit-mode-disabled-item">{{ t('Empty Content Block.') }}</div>
+    {% else %}
+        {{ content | raw }}
+    {% endif %}
+</div>

@@ -1,0 +1,16 @@
+<div class="ccm-summary-template-blog-entry-thumbnail">
+    <a href="{{ link }}" class="card">
+        <div class="position-relative">
+            <div class="card-img-top ccm-summary-template-blog-entry-thumbnail-image-overlay"></div>
+            <img class="card-img-top" src="{{ thumbnail.getThumbnailURL('blog_entry_thumbnail') }}">
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ title }}</h5>
+            {% if date %}
+                <p class="card-text text-center">
+                    <small class="text-muted">{{ date|date('F d, Y') }}</small>
+                </p>
+            {% endif %}
+        </div>
+    </a>
+</div>

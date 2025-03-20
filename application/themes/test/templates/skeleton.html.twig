@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="{{ activeLanguage() }}">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        {{ view.getThemeStyles() | raw }}
+        {{ element('header_required', {
+            'pageTitle': pageTitle ? pageTitle,
+            'pageDescription': pageDescription ? pageDescription,
+            'pageMetaKeywords': pageMetaKeywords ? pageMetaKeywords,
+        }) | raw }}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div class="theme-atomik {{ c.getPageWrapperClass() }}">
+            {% block header %}
+                {% include 'templates/header.html.twig' %}
+            {% endblock %}
+
+            {% block content %}{% endblock %}
+
+            {% block footer %}
+                {% include 'templates/footer.html.twig' %}
+            {% endblock %}
+        </div>
+
+        {% if c %}
+            {{ element('footer_required') | raw }}
+        {% else %}
+            {{ view.markFooterAssetPosition() | raw }}
+        {% endif %}
+        <script src="{{ view.getThemePath() }}/main.js"></script>
+    </body>
+</html>

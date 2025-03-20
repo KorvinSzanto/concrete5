@@ -1,0 +1,17 @@
+<{%- if linkUrl -%}
+    a href="{{ linkUrl }}"
+{%- else -%}
+    div
+{% endif %}
+    class="ccm-block-feature-stacked"
+>
+    {% if title %}
+        {{ iconTag | raw }}
+        <{{ titleFormat }}>{{ title }}</{{ titleFormat }}>
+    {% endif %}
+    {{ paragraph | raw }}
+</{%- if linkUrl -%}
+    a
+{%- else -%}
+    div
+{% endif %}>

@@ -1,0 +1,90 @@
+{% set navigationTypeText = (0 == navigationType) ? 'arrows' : 'pages' %}
+{% if c.isEditMode() %}
+    <div class="ccm-edit-mode-disabled-item" style="{% if width %}width: {{ width }};{% endif %}{% if height %}height:{{ height }};{% endif %}">
+        <div style="padding: 40px 0px 40px 0px">{{ t('Image Slider disabled in edit mode.') }}</div>
+    </div>
+{% else %}
+    <script>
+    $(document).ready(function(){
+        $(function () {
+            if (!$.responsiveSlides)
+
+            $("#ccm-image-slider-{{ bID }}").responsiveSlides({
+                prevText: "",   // String: Text for the "previous" button
+                nextText: "",
+                {% if navigationType == 0 %}
+                    nav: true,
+                {% elseif navigationType == 1 %}
+                    pager: true,
+                {% elseif navigationType == 2 %}
+                    nav: true,
+                    pager: true,
+                {% else %}
+                    nav: false,
+                    pager: false,
+                {% endif %}
+                {% if timeout %}
+                    timeout: {{ timeout }},
+                {% endif %}
+                {% if speed %}
+                    speed: {{ speed }},
+                {% endif %}
+                {% if pause %}
+                    pause: true,
+                {% endif %}
+                {% if noAnimate %}
+                    auto: false,
+                {% endif %}
+                {% if maxWidth %}
+                    maxwidth: {{ maxWidth }},
+                {% endif %}
+            });
+        });
+    });
+    </script>
+
+    <div class="ccm-image-slider-container ccm-block-image-slider-{{ navigationTypeText }}" >
+        <div class="ccm-image-slider">
+            <div class="ccm-image-slider-inner">
+
+                {% if rows|length > 0 %}
+                    <ul class="rslides" id="ccm-image-slider-{{ bID }}">
+                        {% for row in rows %}
+                            <li>
+                                {% if row['linkURL'] %}
+                                    <a href="{{ row['linkURL'] }}" class="mega-link-overlay"></a>
+                                {% endif %}
+                                {% set f = fileByID(row['fID']) %}
+                                {% if f %}
+                                    {% set tag = app('html/image', {'f': f}).getTag() %}
+                                    {% if row['title'] %}
+                                        {{ tag.alt(row['title']) }}
+                                    {% else %}
+                                        {{ tag.alt('slide') }}
+                                    {% endif %}
+                                    {{ tag | raw }}
+                                {% endif %}
+                                <div class="ccm-image-slider-text">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                {% if row['title'] %}
+                                                    <h2 class="ccm-image-slider-title">{{ row['title'] }}</h2>
+                                                {% endif %}
+                                                {{ row['description'] }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="ccm-image-slider-placeholder">
+                        <p>{{ t('No Slides Entered.') }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}
